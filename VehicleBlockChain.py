@@ -5,7 +5,7 @@ import os
 import logging
 from typing import List, Dict, Any, Optional
 
-# Configurazione del logging
+# logging configuration
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -18,7 +18,7 @@ logger = logging.getLogger("VehicleBlockchain")
 
 class Block:
     """
-    Rappresenta un singolo blocco nella blockchain.
+    A block in the blockchain
     
     Attributes:
         index (int): position of the block in the.
@@ -61,12 +61,12 @@ class Block:
 
 class VehicleBlockchain:
     """
-    Gestisce una blockchain per il tracciamento dei dati dei veicoli.
+    this manage the blockchain for tracking vehicles
     
     Attributes:
-        chain (List[Block]): La catena di blocchi.
-        difficulty (int): Difficoltà del proof-of-work.
-        data_file (str): Percorso del file per la persistenza.
+        chain (List[Block): chain
+        difficulty (int): Difficulty of proof of work
+        data_file (str): file path
     """
     
     def __init__(self, difficulty: int = 2, data_file: str = "blockchain_data.json"):
@@ -74,14 +74,14 @@ class VehicleBlockchain:
         self.difficulty = difficulty
         self.data_file = data_file
         
-        # Carica la blockchain esistente o crea una nuova
+        # create the chain o add the block
         if os.path.exists(data_file):
             self.load_chain()
         else:
             self.create_genesis_block()
     
     def create_genesis_block(self) -> None:
-        """Crea il blocco genesi (primo blocco della blockchain)."""
+        #creating genesis block
         genesis_block = Block(
             index=0,
             timestamp=datetime.datetime.now().isoformat(),
@@ -95,14 +95,14 @@ class VehicleBlockchain:
     
     def add_data(self, vehicle_id: str, sensor_data: dict) -> bool:
         """
-        Aggiunge nuovi dati alla blockchain.
+        adding data to blockchain
         
         Args:
-            vehicle_id (str): ID univoco del veicolo.
-            sensor_data (dict): Dati dei sensori del veicolo.
+            vehicle_id (str): vehicle ID
+            sensor_data (dict): sensor data
             
         Returns:
-            bool: True se l'aggiunta è avvenuta con successo.
+            bool: True if the block is added with no errors
         """
         try:
             self._validate_data(vehicle_id, sensor_data)
@@ -121,73 +121,73 @@ class VehicleBlockchain:
             
             new_block.mine_block(self.difficulty)
             self.chain.append(new_block)
-            logger.info(f"Aggiunto nuovo blocco per il veicolo {vehicle_id}")
+            logger.info(f"New Block Added {vehicle_id}")
             
             self.save_chain()
             return True
         except Exception as e:
-            logger.error(f"Errore durante l'aggiunta di dati: {e}")
+            logger.error(f"Loading Error: {e}")
             return False
     
     def _validate_data(self, vehicle_id: str, sensor_data: dict) -> None:
         """
-        Verifica che i dati siano nel formato corretto.
+        #verify the correct format of the data
         
         Args:
-            vehicle_id (str): ID del veicolo.
-            sensor_data (dict): Dati dei sensori.
+            vehicle_id (str): Vehicle ID.
+            sensor_data (dict): sensor data.
             
         Raises:
-            ValueError: Se i dati non sono validi.
+            ValueError: if data are not in a valid format.
         """
         if not vehicle_id or not isinstance(vehicle_id, str):
-            raise ValueError("L'ID del veicolo deve essere una stringa non vuota")
+            raise ValueError("Vehicle ID must be a not-empty string")
         
         if not isinstance(sensor_data, dict):
-            raise ValueError("I dati dei sensori devono essere un dizionario")
+            raise ValueError("sensor data must be a dictionary")
     
     def _generate_signature(self, vehicle_id: str, sensor_data: dict) -> str:
         """
-        Genera una firma digitale per autenticare i dati.
+        digital signature
         
         Args:
-            vehicle_id (str): ID del veicolo.
-            sensor_data (dict): Dati dei sensori.
+            vehicle_id (str): Vehicle ID.
+            sensor_data (dict): sensor data
             
         Returns:
-            str: Firma digitale.
+            str: digital signature.
         """
-        # Here you can use a library for cryptography, data are exposed right now
+        # Here you can use a library for cryptography
 
         data_string = f"{vehicle_id}{json.dumps(sensor_data, sort_keys=True)}"
         return hashlib.sha256(data_string.encode()).hexdigest()
     
     def is_chain_valid(self) -> bool:
         """
-        Verifica l'integrità della blockchain.
+        verify blockchain
         
         Returns:
-            bool: True se la blockchain è valida.
+            bool: True if blockchain is valid
         """
         for i in range(1, len(self.chain)):
             current = self.chain[i]
             previous = self.chain[i - 1]
             
-            # Verifica hash corrente
+            # verify current hash
             if current.hash != current.hash_block():
                 logger.warning(f"Hash invalido nel blocco {i}")
                 return False
             
-            # Verifica collegamento con blocco precedente
+            # Verify previous hash
             if current.previous_hash != previous.hash:
                 logger.warning(f"Collegamento rotto tra blocchi {i-1} e {i}")
                 return False
         
-        logger.info("Verifica blockchain completata: valida")
+        logger.info("Blockchain verified: Valid")
         return True
     
     def save_chain(self) -> None:
-        """Salva la blockchain su file."""
+        """save the blockchain in a file."""
         try:
             data = []
             for block in self.chain:
@@ -204,12 +204,12 @@ class VehicleBlockchain:
             with open(self.data_file, 'w') as f:
                 json.dump(data, f, indent=4)
             
-            logger.info(f"Blockchain salvata in {self.data_file}")
+            logger.info(f"Blockchain saved in {self.data_file}")
         except Exception as e:
-            logger.error(f"Errore durante il salvataggio: {e}")
+            logger.error(f"Saving error: {e}")
     
     def load_chain(self) -> None:
-        """Carica la blockchain da file."""
+        """load blockchain from file."""
         try:
             with open(self.data_file, 'r') as f:
                 data = json.load(f)
@@ -226,38 +226,37 @@ class VehicleBlockchain:
                 block.hash = block_data["hash"]
                 self.chain.append(block)
             
-            logger.info(f"Blockchain caricata da {self.data_file}")
+            logger.info(f"Blockchain loaded from {self.data_file}")
         except Exception as e:
-            logger.error(f"Errore durante il caricamento: {e}")
+            logger.error(f"Loading error: {e}")
             self.create_genesis_block()
     
     def get_block_by_vehicle_id(self, vehicle_id: str) -> List[Block]:
         """
-        Trova tutti i blocchi relativi a un veicolo specifico.
+        finds all the blocks of a vehicle
         
         Args:
-            vehicle_id (str): ID del veicolo da cercare.
+            vehicle_id (str): vehicle id you want to find
             
         Returns:
-            List[Block]: Lista di blocchi relativi al veicolo.
+            List[Block]: blocklist of the vehicle
         """
         return [block for block in self.chain 
                 if block.index > 0 and block.data.get("vehicle_id") == vehicle_id]
 
 
-# Esempio di utilizzo
 if __name__ == "__main__":
     # Creare una blockchain con difficoltà 2
     bc = VehicleBlockchain(difficulty=2)
     
-    # Aggiungere dati di esempio
+    # adding example data
     bc.add_data("LAMB-001", {
         "oil_level": "low",
         "brake_wear": "75%",
         "engine_temp": "normal",
         "error_code": None,
         "km_totali": 15000,
-        "ultima_manutenzione": "2025-04-15"
+        "last_maintainance": "2025-04-15"
     })
     
     bc.add_data("FERR-002", {
@@ -266,19 +265,19 @@ if __name__ == "__main__":
         "engine_temp": "high",
         "error_code": "P0301",
         "km_totali": 8500,
-        "ultima_manutenzione": "2025-01-20"
+        "last_maintainance": "2025-01-20"
     })
     
-    # Verificare la validità della blockchain
+    
     print("Blockchain valida:", bc.is_chain_valid())
     
-    # Ricerca di tutti i blocchi per un veicolo specifico
+    # searching blocks for a specific vehicle
     lamb_blocks = bc.get_block_by_vehicle_id("LAMB-001")
     print(f"\nBlocchi per LAMB-001: {len(lamb_blocks)}")
     for block in lamb_blocks:
         print(json.dumps(block.data, indent=2))
     
-    # Stampare l'intera catena
-    print("\nBLOCKCHAIN COMPLETA:")
+    # printing blockchain
+    print("\n BLOCKCHAIN COMPLETED:")
     for block in bc.chain:
         print(f"Blocco #{block.index} | Hash: {block.hash[:10]}... | Timestamp: {block.timestamp}")
