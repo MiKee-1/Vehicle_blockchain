@@ -1,2 +1,10 @@
 # Vehicle_blockchain
-A Blockchain for Vehicle for monitoring
+This Python project implements a simple yet functional **blockchain system for vehicle data tracking**, offering tamper-proof storage and verification of sensor data from different vehicles. The code is structured around two main classes: `Block` and `VehicleBlockchain`, designed to facilitate secure and auditable logging of vehicle sensor data over time.
+
+At its core, the `Block` class represents an individual unit in the blockchain. Each block contains an index, timestamp, vehicle-related data, a hash of the previous block, a nonce for mining purposes, and its own hash. The hash is computed using the SHA-256 algorithm, ensuring the immutability of the data. The `mine_block` method implements a basic proof-of-work algorithm based on a configurable difficulty level, which determines how many leading zeros the block's hash must contain.
+
+The `VehicleBlockchain` class manages the entire chain of blocks. On initialization, it either loads a previously saved blockchain from disk or creates a genesis block if no saved data exists. This class includes functionality to add new vehicle data, validate the entire chain for consistency, and persist the blockchain to a JSON file. New data is validated and digitally signed with a SHA-256 hash to ensure authenticity. The system also provides methods to retrieve all blocks related to a specific vehicle ID and to verify the overall integrity of the blockchain by checking hash consistency and block linkage.
+
+Logging is enabled throughout the application using Python’s `logging` module, providing both console output and file-based logs for monitoring operations and debugging.
+
+This project demonstrates how blockchain concepts like immutability, decentralization (in this case, simulated), and proof-of-work can be applied to real-world use cases such as automotive data management, offering a transparent and secure method of storing chronological sensor data for diagnostics, maintenance history, or regulatory compliance.
